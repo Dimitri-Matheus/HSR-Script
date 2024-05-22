@@ -138,23 +138,23 @@
   },
   "CTkRadioButton": {
     "corner_radius": 1000,
-    "border_width_checked": 6,
-    "border_width_unchecked": 3,
+    "border_width_checked": 5,
+    "border_width_unchecked": 2,
     "fg_color": [
-      "#3B8ED0",
-      "#1F6AA5"
+      "#FFFFFF",
+      "#FFFFFF"
     ],
     "border_color": [
-      "#3E454A",
-      "#949A9F"
+      "#FFFFFF",
+      "#FFFFFF"
     ],
     "hover_color": [
-      "#36719F",
-      "#144870"
+      "#808080",
+      "#808080"
     ],
     "text_color": [
-      "gray10",
-      "#DCE4EE"
+      "#FFFFFF",
+      "#FFFFFF"
     ],
     "text_color_disabled": [
       "gray60",
