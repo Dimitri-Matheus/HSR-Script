@@ -11,6 +11,7 @@ class MyImageFrame(ctk.CTkFrame):
         self.Oniric_1 = ctk.CTkLabel(master=self, text="", image=self.Oniric_1)
         self.Oniric_1.place(relx=0.5, rely=0.45, anchor=CENTER)
 
+
 class HSRS(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -19,6 +20,7 @@ class HSRS(ctk.CTk):
         self.resizable(width=False, height=False)
         self.configure(fg_color="#432818")
         self.bind('<Return>', self.validate_enter)
+
         self.enter_bound = False
 
         ctk.set_default_color_theme("theme/standard.json")
@@ -65,15 +67,15 @@ class HSRS(ctk.CTk):
             self.path_entry.place_forget()
 
             self.radiobutton_1 = ctk.CTkRadioButton(self, text="Run", variable= radio_var, value=1)
-            self.radiobutton_1.configure(font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), radiobutton_width=18, radiobutton_height=18)
+            self.radiobutton_1.configure(font=ctk.CTkFont(family="Verdana", size=14), radiobutton_width=18, radiobutton_height=18)
             self.radiobutton_1.place(relx=0.73, rely=0.5, anchor=CENTER)
             self.radiobutton_2 = ctk.CTkRadioButton(self, text="Not run", variable= radio_var, value=2)
-            self.radiobutton_2.configure(font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), radiobutton_width=18, radiobutton_height=18)
+            self.radiobutton_2.configure(font=ctk.CTkFont(family="Verdana", size=14), radiobutton_width=18, radiobutton_height=18)
             self.radiobutton_2.place(relx=0.73, rely=0.6, anchor=CENTER)
 
             self.install_button.configure(text="Finish", command=lambda: self.destroy())
 
-            
+
 
     def iconbitmap(self, bitmap):
         self._iconbitmap_method_called = False
