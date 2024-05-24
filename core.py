@@ -1,42 +1,30 @@
 import os
 import subprocess
 
-# Configurações iniciais
-title = "Genshin Impact + ReShade"
-console_color = "0f"
-console_size = "110,25"
+injector_path = "script/Injector.exe"
 
-# Caminho para o executável do jogo
-genshin_impact_path = r"C:\Games\Star Rail\Games\StarRail.exe"  # Altere para o caminho do seu StarRail.exe
+# Function to Main.py
+def verification(impact_path, text):
+    missing_file = "Injector.exe" if not os.path.isfile(injector_path) else f"The specified file was not found!"
+    if not os.path.isfile(injector_path) or not os.path.isfile(impact_path):
+        text.configure(text=f"{missing_file}")
+        raise FileNotFoundError("The files were not found!")
+    
+    elif os.path.isfile(injector_path) and os.path.isfile(impact_path):
+        print("All necessary files were found!")
+    else:
+        print("Failed to read the files!")
 
-# Função para executar comandos no PowerShell
-def run_powershell_command(command):
-    subprocess.run(["powershell", "-command", command], check=True)
+def run_command(impact_path):
+    try:
+        subprocess.run(["powershell", "-Command", "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted"], check=True)
+        subprocess.run(["powershell", "-Command", f'Start-Process -FilePath "{injector_path}" -ArgumentList "StarRail.exe" -Verb RunAs'], check=True)
+        subprocess.run(["powershell", "-Command", f'Start-Process -FilePath "{impact_path}" -Verb RunAs'], check=True)
+        subprocess.run(["powershell", "-Command", "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Restricted"], check=True)
 
-# Verifica se o caminho do executável do jogo existe
-if not os.path.isfile(genshin_impact_path):
-    raise FileNotFoundError(f"O arquivo especificado não foi encontrado: {genshin_impact_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while executing the command: {e}")
 
-# Configurar título e aparência do console
-os.system(f"title {title}")
-os.system(f"color {console_color}")
-os.system(f"mode con:cols={console_size.split(',')[0]} lines={console_size.split(',')[1]}")
-
-# Definir política de execução do PowerShell para não restrito
-run_powershell_command("Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted")
-
-# Verifica se o Injector.exe existe no diretório atual
-injector_path = "Injector.exe"
-if not os.path.isfile(injector_path):
-    raise FileNotFoundError(f"O arquivo Injector.exe não foi encontrado no diretório atual.")
-
-# Executar o Injector.exe como administrador
-run_powershell_command(f'Start-Process -FilePath "{injector_path}" StarRail.exe -Verb RunAs')
-
-# Executar o jogo como administrador
-run_powershell_command(f'Start-Process -FilePath "{genshin_impact_path}" -Verb RunAs')
-
-# Reverter a política de execução do PowerShell para restrito
-run_powershell_command("Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Restricted")
-
-print("Script concluído com sucesso.")
+# Test
+#verification(r"C:\Games\Star Rail\Games")
+#run_command(r"C:\Games\Star Rail\Games\StarRail.exe")

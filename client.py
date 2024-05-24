@@ -1,12 +1,11 @@
 from tkinter import *
 import customtkinter as ctk
 import PIL.Image, PIL.ImageTk
-from data_core import run_command, verification
+from core import run_command, verification
 
 class MyImageFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, width=300, height=315)
-        
         self.Oniric_1 = ctk.CTkImage(PIL.Image.open("assets/logo/Oniric_1.png"), size=(256, 256))
         self.Oniric_1 = ctk.CTkLabel(master=self, text="", image=self.Oniric_1)
         self.Oniric_1.place(relx=0.5, rely=0.45, anchor=CENTER)
@@ -55,27 +54,37 @@ class HSRS(ctk.CTk):
             self.path_entry.configure(width=270, height=64, corner_radius=8)
             self.path_entry.place(relx=0.72, rely=0.58, anchor=CENTER)
 
-            def combined_commands():
+            def combined_action():
                 verification(self.path_entry.get(), self.text_1)
                 self.pages("finish_page")
 
-            self.patch_button = ctk.CTkButton(self, text="Patch", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: combined_commands())
+            self.patch_button = ctk.CTkButton(self, text="Patch", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: combined_action())
             self.patch_button.configure(width=135, height=54, corner_radius=8)
             self.patch_button.place(relx=0.72, rely=0.85, anchor=CENTER)
 
         elif stats == "finish_page":
-            radio_var = IntVar(value=1)
+            radio_var = IntVar(value=0)
             self.text_1.configure(text="Your game has been patched!")
             self.path_entry.place_forget()
+
+            def combined_command():
+                if radio_var.get() == 1:
+                    print("The application ran successfully!")
+                    run_command(self.path_entry.get())
+                    self.destroy()
+                elif radio_var.get() == 2:
+                    print("The application did not run!")
+                    self.destroy()
 
             self.radiobutton_1 = ctk.CTkRadioButton(self, text="Run", variable= radio_var, value=1)
             self.radiobutton_1.configure(font=ctk.CTkFont(family="Verdana", size=14), radiobutton_width=18, radiobutton_height=18)
             self.radiobutton_1.place(relx=0.73, rely=0.5, anchor=CENTER)
+
             self.radiobutton_2 = ctk.CTkRadioButton(self, text="Not run", variable= radio_var, value=2)
             self.radiobutton_2.configure(font=ctk.CTkFont(family="Verdana", size=14), radiobutton_width=18, radiobutton_height=18)
             self.radiobutton_2.place(relx=0.73, rely=0.6, anchor=CENTER)
 
-            self.patch_button.configure(text="Finish", command=lambda: self.destroy())
+            self.patch_button.configure(text="Finish", command=lambda: combined_command())
 
 
 
