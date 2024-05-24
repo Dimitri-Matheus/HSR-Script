@@ -1,12 +1,12 @@
 from tkinter import *
 import customtkinter as ctk
 import PIL.Image, PIL.ImageTk
+from data_core import run_command, verification
 
 class MyImageFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, width=300, height=315)
         
-        # Load the image and place it in the frame
         self.Oniric_1 = ctk.CTkImage(PIL.Image.open("assets/logo/Oniric_1.png"), size=(256, 256))
         self.Oniric_1 = ctk.CTkLabel(master=self, text="", image=self.Oniric_1)
         self.Oniric_1.place(relx=0.5, rely=0.45, anchor=CENTER)
@@ -41,11 +41,10 @@ class HSRS(ctk.CTk):
     def validate_enter(self, event):
         if not self.enter_bound:
             self.enter_bound = True
-            self.pages("path_game")
+            self.pages("path_page")
         
     def pages(self, stats):
-        if stats == "path_game":
-            print("Tecla funcionando!")
+        if stats == "path_page":
             self.title.configure(font=ctk.CTkFont(size=50, weight="bold"))
             self.title.place(relx=0.72, rely=0.15, anchor=CENTER)
             self.text_1.configure(text="Paste the game folder here!", font=ctk.CTkFont(size=18))
@@ -56,13 +55,16 @@ class HSRS(ctk.CTk):
             self.path_entry.configure(width=270, height=64, corner_radius=8)
             self.path_entry.place(relx=0.72, rely=0.58, anchor=CENTER)
 
-            self.install_button = ctk.CTkButton(self, text="Install", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: self.pages("finish"))
-            self.install_button.configure(width=135, height=54, corner_radius=8)
-            self.install_button.place(relx=0.72, rely=0.85, anchor=CENTER)
+            def combined_commands():
+                verification(self.path_entry.get(), self.text_1)
+                self.pages("finish_page")
 
-        elif stats == "finish":
-            print("Botão funcionando!")
-            radio_var = IntVar(value=0)
+            self.patch_button = ctk.CTkButton(self, text="Patch", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: combined_commands())
+            self.patch_button.configure(width=135, height=54, corner_radius=8)
+            self.patch_button.place(relx=0.72, rely=0.85, anchor=CENTER)
+
+        elif stats == "finish_page":
+            radio_var = IntVar(value=1)
             self.text_1.configure(text="Your game has been patched!")
             self.path_entry.place_forget()
 
@@ -73,7 +75,7 @@ class HSRS(ctk.CTk):
             self.radiobutton_2.configure(font=ctk.CTkFont(family="Verdana", size=14), radiobutton_width=18, radiobutton_height=18)
             self.radiobutton_2.place(relx=0.73, rely=0.6, anchor=CENTER)
 
-            self.install_button.configure(text="Finish", command=lambda: self.destroy())
+            self.patch_button.configure(text="Finish", command=lambda: self.destroy())
 
 
 
