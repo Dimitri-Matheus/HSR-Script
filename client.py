@@ -27,7 +27,7 @@ class HSRS(ctk.CTk):
 
         self.enter_bound = False
 
-        ctk.set_default_color_theme("theme/standard.json")
+        ctk.set_default_color_theme("theme/Trailblazer.json")
         ctk.set_appearance_mode("dark")
 
         self.frame = Image_Frame(self)
