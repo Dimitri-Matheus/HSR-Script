@@ -77,10 +77,11 @@ class HSRS(ctk.CTk):
             def combined_command():
                 if radio_var.get() == 1:
                     print("The application ran successfully...")
-                    run_command(self.path_entry.get())
+                    run_command(self.path_entry.get(), True)
                     self.destroy()
                 elif radio_var.get() == 2:
                     print("The application did not run...")
+                    run_command(self.path_entry.get(), False)
                     self.destroy()
 
             self.radiobutton_1 = ctk.CTkRadioButton(self, text="Run", variable= radio_var, value=1)
