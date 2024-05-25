@@ -3,12 +3,17 @@ import customtkinter as ctk
 import PIL.Image, PIL.ImageTk
 from core import run_command, verification
 
-class MyImageFrame(ctk.CTkFrame):
+class Image_Frame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, width=300, height=315)
-        self.Oniric_1 = ctk.CTkImage(PIL.Image.open("assets/logo/Oniric_1.png"), size=(256, 256))
-        self.Oniric_1 = ctk.CTkLabel(master=self, text="", image=self.Oniric_1)
-        self.Oniric_1.place(relx=0.5, rely=0.45, anchor=CENTER)
+        self.char_image_1 = ctk.CTkImage(PIL.Image.open("assets/logo/Trailblazer 1.png"), size=(256, 256))
+        self.char_image_2 = ctk.CTkImage(PIL.Image.open("assets/logo/Trailblazer 2.png"), size=(256, 256))
+        self.char_image_3 = ctk.CTkImage(PIL.Image.open("assets/logo/Trailblazer 3.png"), size=(256, 256))
+        self.char_label = ctk.CTkLabel(master=self, text="", image=self.char_image_1)
+        self.char_label.place(relx=0.5, rely=0.45, anchor=CENTER)
+
+    def update_image(self, new_image):
+        self.char_label.configure(image=new_image)
 
 
 class HSRS(ctk.CTk):
@@ -25,7 +30,7 @@ class HSRS(ctk.CTk):
         ctk.set_default_color_theme("theme/standard.json")
         ctk.set_appearance_mode("dark")
 
-        self.frame = MyImageFrame(self)
+        self.frame = Image_Frame(self)
         self.frame.place(relx=0, rely=0, anchor=NW)
 
         self.title = ctk.CTkLabel(self, text="HSR+Script", font=ctk.CTkFont(size=58, weight="bold"))
@@ -44,6 +49,7 @@ class HSRS(ctk.CTk):
         
     def pages(self, stats):
         if stats == "path_page":
+            self.frame.update_image(self.frame.char_image_2)
             self.title.configure(font=ctk.CTkFont(size=50, weight="bold"))
             self.title.place(relx=0.72, rely=0.15, anchor=CENTER)
             self.text_1.configure(text="Paste the game folder here!", font=ctk.CTkFont(size=18))
@@ -63,17 +69,18 @@ class HSRS(ctk.CTk):
             self.patch_button.place(relx=0.72, rely=0.85, anchor=CENTER)
 
         elif stats == "finish_page":
+            self.frame.update_image(self.frame.char_image_3)
             radio_var = IntVar(value=0)
             self.text_1.configure(text="Your game has been patched!")
             self.path_entry.place_forget()
 
             def combined_command():
                 if radio_var.get() == 1:
-                    print("The application ran successfully!")
+                    print("The application ran successfully...")
                     run_command(self.path_entry.get())
                     self.destroy()
                 elif radio_var.get() == 2:
-                    print("The application did not run!")
+                    print("The application did not run...")
                     self.destroy()
 
             self.radiobutton_1 = ctk.CTkRadioButton(self, text="Run", variable= radio_var, value=1)
@@ -90,7 +97,7 @@ class HSRS(ctk.CTk):
 
     def iconbitmap(self, bitmap):
         self._iconbitmap_method_called = False
-        super().wm_iconbitmap('assets/icon/1.ico')
+        super().wm_iconbitmap('assets/icon/Oniric_Brown.ico')
 
 if __name__ == "__main__":
     app = HSRS()
