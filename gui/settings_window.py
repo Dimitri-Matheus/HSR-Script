@@ -52,7 +52,6 @@ class GamePathFrame(ctk.CTkFrame):
             widget.delete(0, "end")
             widget.insert(0, foldername)
 
-
 class AppFrame(ctk.CTkFrame):
     def __init__(self, master, settings: dict):
         super().__init__(master)
@@ -62,11 +61,10 @@ class AppFrame(ctk.CTkFrame):
         self.grid_columnconfigure(1, weight=0)
 
         # Load Variables
-        self.xxmi_var = ctk.BooleanVar(value=self.settings["Launcher"]["xxmi_feature_enabled"])
-        self.xxmi_file_path = self.settings["Script"]["xxmi_file"]
         self.addon_var = ctk.BooleanVar(value=self.settings["Launcher"]["reshade_feature_enabled"])
         self.dxvk_var = ctk.BooleanVar(value=self.settings["Launcher"]["direct_feature_enabled"])
         self.update_var = ctk.BooleanVar(value=self.settings["Launcher"]["auto_check_update"])
+        self.mod_var = ctk.BooleanVar(value=self.settings["Launcher"].get("mod_feature_enabled", False))
         self.theme_var = ctk.StringVar(value=self.settings["Launcher"]["gui_theme"])
 
         # Themes
@@ -90,18 +88,9 @@ class AppFrame(ctk.CTkFrame):
         self.integration_subtitle = ctk.CTkLabel(self, text="Integration/Features", font=ctk.CTkFont(size=18))
         self.integration_subtitle.grid(row=2, column=0, padx=25, pady=(15, 5), sticky="w")
     
-        self.switch_xxmi = ctk.CTkSwitch(self, text="XXMI", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False, command=lambda: self.switch_toogle_xxmi())
-        self.switch_xxmi.configure(switch_width=36, switch_height=20, variable=self.xxmi_var)
-        self.switch_xxmi.grid(row=3, column=0, padx=25, pady=(10, 5), sticky="w")
-        StyledToolTip(self.switch_xxmi, message = (
-            "Enabled: Integrates ReShade settings with the XXMI Launcher.\n"
-            "Disabled: Leaves the XXMI Launcher unchanged.\n"
-            "Attention: The XXMI Launcher needs to be opened at least once!"
-        ))
-
         self.switch_dxvk = ctk.CTkSwitch(self, text="DirectX", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
         self.switch_dxvk.configure(switch_width=36, switch_height=20, variable=self.dxvk_var)
-        self.switch_dxvk.grid(row=4, column=0, padx=25, pady=(10, 5), sticky="w")
+        self.switch_dxvk.grid(row=3, column=0, padx=25, pady=(10, 5), sticky="w")
         StyledToolTip(self.switch_dxvk, message = (
             "Enabled: Start the game using the DirectX 11 graphics API.\n"
             "Disabled: Start the game using the default graphics API.\n"
@@ -110,7 +99,7 @@ class AppFrame(ctk.CTkFrame):
 
         self.switch_addon = ctk.CTkSwitch(self, text="Reshade+", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
         self.switch_addon.configure(switch_width=36, switch_height=20, variable=self.addon_var)
-        self.switch_addon.grid(row=5, column=0, padx=25, pady=(10, 5), sticky="w")
+        self.switch_addon.grid(row=4, column=0, padx=25, pady=(10, 5), sticky="w")
         StyledToolTip(self.switch_addon, message = (
             "Enabled: Switches to the enhanced ReShade build with Addon support.\n"
             "Disabled: Keeps the regular ReShade version active.\n"
@@ -119,46 +108,22 @@ class AppFrame(ctk.CTkFrame):
 
         self.switch_update = ctk.CTkSwitch(self, text="Check for updates", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
         self.switch_update.configure(switch_width=36, switch_height=20, variable=self.update_var)
-        self.switch_update.grid(row=6, column=0, padx=25, pady=(10, 5), sticky="w")
+        self.switch_update.grid(row=5, column=0, padx=25, pady=(10, 5), sticky="w")
         StyledToolTip(self.switch_update, message = (
             "Enabled: The app will automatically check for updates at startup.\n"
             "Disabled: The app will not check for updates automatically.\n"
             "Recommended to keep enabled for automatic updates."
         ))
-
-        # XXMI Path
-        self.config_file = ctk.CTkLabel(self, text="Configuration File", font=ctk.CTkFont(size=18))
-        self.config_file.grid(row=7, column=0, padx=25, pady=(15, 5), sticky="w")
-
-        self.xxmi_settings = ctk.CTkEntry(self, placeholder_text="C:/Path/to/XXMI Launcher Config.json", font=ctk.CTkFont(family="Verdana", size=14))
-        self.xxmi_settings.configure(width=478, height=38, corner_radius=8, state="disabled", fg_color="#333333", border_color="#333333")
-        self.xxmi_settings.grid(row=8, column=0, padx=25, pady=5, sticky="w")
-        StyledToolTip(self.xxmi_settings, message = "Usually located in the \"XXMI Launcher folder\" or \"AppData\\Roaming\\XXMI Launcher\".")
-
-        self.browser_button = ctk.CTkButton(self, text="Browser", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: self.select_file(self.xxmi_settings))
-        self.browser_button.configure(width=123, height=38, corner_radius=8, state="disabled", fg_color="#222222")
-        self.browser_button.grid(row=8, column=1, padx=(0, 20), pady=5, sticky="w")
-
-        self.switch_toogle_xxmi()
-
-    def switch_toogle_xxmi(self):
-        if self.xxmi_var.get():
-            self.xxmi_settings.configure(state="normal", fg_color="#515151", border_color="#515151")
-            self.browser_button.configure(state="normal", fg_color=ThemeManager.get_custom_color("accent_color"))
-            file_path = self.settings["Script"].get("xxmi_file", "")
-            if file_path:
-                self.xxmi_settings.insert(0, file_path)
-        else:
-            self.xxmi_settings.configure(state="disabled", fg_color="#333333", border_color="#333333")
-            self.browser_button.configure(state="disabled", fg_color="#222222")
-
-    def select_file(self, widget):
-        filename = filedialog.askopenfilename(parent=self, title="Open XXMI Settings", initialdir="/", defaultextension=".json", filetypes=[("JSON files","*.json"), ("All files", "*.*")])
-        if filename:
-            self.xxmi_file_path = filename
-            widget.delete(0, "end")
-            widget.insert(0, filename)
-
+        
+        # Mod Support Switch
+        self.switch_mod = ctk.CTkSwitch(self, text="Mod Support", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
+        self.switch_mod.configure(switch_width=36, switch_height=20, variable=self.mod_var)
+        self.switch_mod.grid(row=5, column=1, padx=25, pady=(10, 5), sticky="w")
+        StyledToolTip(self.switch_mod, message = (
+            "Enabled: Integrates Character Mods (GIMI, SRMI, WWMI, etc.) based on game.\n"
+            "Disabled: Starts the game without character mods.\n"
+            "Ensure required files are in their respective script folders."
+        ))
 
 class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, master, settings_load: dict, controller):
@@ -213,36 +178,33 @@ class SettingsDialog(ctk.CTkToplevel):
     def save_path(self, path_entries: dict[str, ctk.CTkEntry]):
         errors = []
 
-        xxmi_enabled = self.app_content_frame.xxmi_var.get()
         reshade_enabled = self.app_content_frame.addon_var.get()
         direct_enabled = self.app_content_frame.dxvk_var.get()
         update_enabled = self.app_content_frame.update_var.get()
+        mod_enabled = self.app_content_frame.mod_var.get()
         theme_options = self.app_content_frame.theme_var.get()
-        xxmi_config_path = self.app_content_frame.xxmi_settings.get().strip()
 
-        self.settings["Script"]["xxmi_file"] = xxmi_config_path
         self.settings["Launcher"]["reshade_feature_enabled"] = reshade_enabled
         self.settings["Launcher"]["auto_check_update"] = update_enabled
         self.settings["Launcher"]["direct_feature_enabled"] = direct_enabled
+        self.settings["Launcher"]["mod_feature_enabled"] = mod_enabled
 
         if self.settings["Launcher"]["gui_theme"] != theme_options:
             self.settings["Launcher"]["gui_theme"] = theme_options
             StyledPopup(message="Restart required to apply theme!")
 
-        setup_system = ReshadeSetup(self.settings, "", xxmi_enabled)
+        setup_system = ReshadeSetup(self.settings, "")
         result_system = setup_system.verify_system()
 
         if not result_system["status"]:
             errors.append(result_system.get("message"))
-        else:
-            self.settings["Launcher"]["xxmi_feature_enabled"] = xxmi_enabled
         
         for game_code, entry in path_entries.items():
             game_path = entry.get().strip()
             if not game_path:
                 continue
 
-            setup_install = ReshadeSetup(self.settings, game_path, xxmi_enabled)
+            setup_install = ReshadeSetup(self.settings, game_path)
             result_install = setup_install.verify_installation()
             
             if not result_install["status"]:
