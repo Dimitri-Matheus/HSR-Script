@@ -120,11 +120,10 @@ class LauncherDialog(ctk.CTkToplevel):
         self.settings["Launcher"]["last_played_game"] = game_code
         save_config(self.settings)
 
-        setup = ReshadeSetup(self.settings, folder, self.settings["Launcher"]["xxmi_feature_enabled"])
+        setup = ReshadeSetup(self.settings, folder)
         setup.verify_installation()
         setup.addon_support()
         setup.dxvk_support()
-        setup.xxmi_integration(game_code)
 
         result = setup.inject_game()
         self.destroy()
@@ -392,5 +391,3 @@ class InputGame(ctk.CTkToplevel):
     def iconbitmap(self, bitmap):
         self._iconbitmap_method_called = False
         super().wm_iconbitmap(resource_path('assets/icon/window_icon.ico'))
-
-    

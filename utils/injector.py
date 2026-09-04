@@ -22,9 +22,8 @@ def get_filesystem(path: str) -> str:
     except Exception as e:
         logger.warning(f"Error detecting filesystem type: {e}")
 
-
 class ReshadeSetup():
-    def __init__(self, settings: dict, game_path: str, xxmi_enabled: bool):
+    def __init__(self, settings: dict, game_path: str):
         self.settings = settings
         self.game_base = game_path
         self.game_path = Path(self.game_base)
@@ -33,7 +32,6 @@ class ReshadeSetup():
         self.script_config = self.settings.get("Script", {})
         self.package_config = self.settings.get("Packages", {})
         self.launcher_config = self.settings.get("Launcher", {})
-        self.xxmi_enabled = xxmi_enabled
 
         self.reshade_src = relative_path(self.script_config.get("reshade_file"))
         self.shaders_src = relative_path(self.script_config.get("shaders_dir"))
@@ -42,10 +40,12 @@ class ReshadeSetup():
         self.reshade_config = relative_path(self.script_config.get("reshade_config"))
         self.reshade_xr_config = relative_path(self.script_config.get("reshade_xr_config"))
 
-        self.xxmi_src = relative_path(self.script_config.get("xxmi_file"))
         self.download_src = relative_path(self.package_config.get("download_dir"))
         self.reshade_enabled = self.launcher_config.get("reshade_feature_enabled")
         self.direct_enabled = self.launcher_config.get("direct_feature_enabled")
+        
+        # Dynamic Mod Option
+        self.mod_enabled = self.launcher_config.get("mod_feature_enabled", False)
 
     def verify_installation(self):
         try:
@@ -87,9 +87,6 @@ class ReshadeSetup():
                 ("ReShade64_XR.json", self.reshade_xr_config, "file")
             ]
         
-        if self.xxmi_enabled:
-            validation_items.append(("XXMI Launcher Config", self.xxmi_src, "xxmi"))
-
         try:
             for name, path, item in validation_items:
                 exists = path.is_file() if item != "dir" else path.is_dir()
@@ -97,10 +94,6 @@ class ReshadeSetup():
                 if not exists:
                     logger.error(f"Missing required {name}: {path}")
                     raise FileNotFoundError(f"{name} not found!")
-                
-                if item == "xxmi" and path.name != "XXMI Launcher Config.json":
-                    logger.error(f"Invalid XXMI file name: {path.name}")
-                    raise FileNotFoundError("Please select XXMI Launcher Config.json")
 
         except Exception as e:
             return {
@@ -170,7 +163,40 @@ class ReshadeSetup():
                     "\n(Uninstall ReShade and retry)\n"
                 ),
             }
+        
+        # Dynamic Mod Setup
+        self.importer_name = None
+        if self.mod_enabled:
+            IMPORTER_MAP = {
+                "genshin_impact": "GIMI",
+                "honkai_star_rail": "SRMI",
+                "wuthering_waves": "WWMI",
+                "zenless_zone_zero": "ZZMI",
+                "arknights_endfield": "EFMI"
+            }
+            self.importer_name = IMPORTER_MAP.get(self.game_code)
             
+            if self.importer_name:
+                mod_src_dir = relative_path(f"script/{self.importer_name}")
+                if mod_src_dir.is_dir():
+                    logger.info(f"Setting up Mod environment for {self.importer_name}...")
+                    for item in mod_src_dir.iterdir():
+                        dest = self.game_dir / item.name
+                        if not dest.exists():
+                            try:
+                                # Link everything except d3d11.dll (which will be injected later)
+                                if item.name.lower() != "d3d11.dll":
+                                    if item.is_dir():
+                                        dest.symlink_to(item, target_is_directory=True)
+                                    else:
+                                        item_target = item.resolve() if item.is_symlink() else item
+                                        dest.symlink_to(item_target)
+                                    logger.info(f"Linked Mod file: {item.name}")
+                            except Exception as e:
+                                logger.error(f"Failed to link Mod file {item.name}: {e}")
+                else:
+                    logger.warning(f"Mod directory not found: {mod_src_dir}")
+
         try:
             args = [str(self.exe_path)]
             if self.direct_enabled:
@@ -199,6 +225,16 @@ class ReshadeSetup():
                 else:
                     inject_dll_from_path(process_name.process_handle, str(self.reshade_dll))
                     logger.info(f"{self.reshade_dll.name} injected successfully!")
+                
+                # Dynamic Mod Injection
+                if self.mod_enabled and self.importer_name:
+                    mod_dll = relative_path(f"script/{self.importer_name}/d3d11.dll")
+                    if mod_dll.is_file():
+                        inject_dll_from_path(process_name.process_handle, str(mod_dll))
+                        logger.info(f"{self.importer_name} ({mod_dll.name}) injected successfully!")
+                    else:
+                        logger.info(f"No d3d11.dll found for {self.importer_name}, skipping injection (ini only mode).")    
+                
                 return {"message": None}
             else:
                 raise RuntimeError(f"Game process {self.exe_path.name} did not start within {timeout} seconds...")
@@ -211,53 +247,7 @@ class ReshadeSetup():
                     "\n(Uninstall ReShade and retry)\n"
                 ),
             }
-    
-    def xxmi_integration(self, game_code):
-        if not self.xxmi_enabled:
-            logger.info(f"XXMI Integration inactive")
-            return
-
-        IMPORTER_MAP = {
-            "genshin_impact": "GIMI",
-            "honkai_star_rail": "SRMI",
-            "wuthering_waves": "WWMI",
-            "zenless_zone_zero": "ZZMI",
-            "arknights_endfield": "EFMI"
-        }
-
-        importer_key = IMPORTER_MAP.get(game_code)
-        if not importer_key:
-            logger.warning(f"No XXMI importer mapped for game {game_code}!")
-            return None
-
-        logger.info(f"Mapping for {game_code} successfully found!")
-
-        xxmi_root = Path(self.xxmi_src).parent
-        mount_path = xxmi_root / importer_key / "d3d11.dll"
-        if mount_path.exists():
-            logger.info(f"XXMI mount point already exists: {mount_path}")
-        else:
-            logger.error(f"XXMI d3d11.dll not found for {importer_key} in any known location!")
-            return
-
-        try:
-            libraries = f"{self.reshade_dll}\n{mount_path}"
-            with open(self.xxmi_src, "r+", encoding="utf-8") as f:
-                config_data = json.load(f)
-
-                importer_settings = config_data["Importers"][importer_key]["Importer"]
-                importer_settings["extra_libraries_enabled"] = True
-                importer_settings["extra_libraries"] = libraries
-
-                f.seek(0)
-                json.dump(config_data, f, indent=4)
-                f.truncate()
             
-            logger.info("XXMI configuration file updated successfully!")
-
-        except Exception as e:
-            logger.error(e)
-
     # Define Hash files
     def _sha256(self, file_source: Path, file_destination: Path) -> bool:
         source_hash = hashlib.sha256()
@@ -310,24 +300,3 @@ class ReshadeSetup():
                 logger.error(f"Failed to copy {dll_name}: {e}")
         else:
             logger.info(f"{dll_name} is already up to date!")
-
-
-#! Test functions
-# config = load_config()
-# setup_reshade = ReshadeSetup(config, "C:/Games/EndField Game", False)
-# result_install = setup_reshade.verify_installation()
-# result_system = setup_reshade.verify_system()
-# setup_reshade.inject_game()
-# setup_reshade.xxmi_integration(game_code)
-# setup_reshade.addon_support()
-# setup_reshade.dxvk_support()
-# print(get_filesystem("None"))
-
-# message_1 = result_install.get("message", "success!")
-# error_type_1 = result_install.get("error_type", "success!")
-
-# message_2 = result_system.get("message", "success!")
-# error_type_2 = result_system.get("error_type", "success!")
-
-# print(f"\nA Mensagem: {message_1}\nO Tipo de erro: {error_type_1}")
-# print(f"\nA Mensagem: {message_2}\nO Tipo de erro: {error_type_2}")

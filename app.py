@@ -3,7 +3,9 @@
 # nuitka-project: --output-dir=build
 # nuitka-project: --output-filename=Starluxe.exe
 # nuitka-project: --windows-console-mode=disable
-
+# nuitka-project: --include-data-dir=assets=assets
+# nuitka-project: --include-data-dir=themes=themes
+# nuitka-project: --include-data-dir=script=script
 # UAC Configuration
 # nuitka-project: --windows-uac-admin
 # nuitka-project: --report=compilation-report.xml
@@ -326,7 +328,7 @@ class ConfigPage(BasePage):
             self.controller.show_page("ReshadePage")
             return
 
-        setup_install = ReshadeSetup(self.settings, game_path, self.settings["Launcher"]["xxmi_feature_enabled"])
+        setup_install = ReshadeSetup(self.settings, game_path)
         result = setup_install.verify_installation()
 
         if result["status"] == True:
@@ -387,19 +389,20 @@ if __name__ == "__main__":
     ctk.set_default_color_theme(themes.load_theme(settings["Launcher"]["gui_theme"]))
 
     app = Starluxe(settings)
-    setup_system = ReshadeSetup(settings, "", settings["Launcher"]["xxmi_feature_enabled"])
+    setup_system = ReshadeSetup(settings, "")
     result_system = setup_system.verify_system()
     result_update = check_for_updates("Dimitri-Matheus", settings["Launcher"]["auto_check_update"])
     sync_metadata(settings["Account"]["github_name"], settings["Account"]["repository_name"])
 
-    if result_update["status"]:
-        msbox_update = StyledPopup(title="New Version!", message=(
-            "Good news! An update is ready. \n\n   "
-            f"Version {result_update['version']} ({result_update['size'] / 1_000_000:.2f} MB)"
-        ), topmost=True, option_1="Update now", option_2="Later",)
-        
-        if msbox_update.get() == "Update now":
-            download_update(result_update["url"])
+    # UPDATE SYSTEM DISABLED!
+    # if result_update["status"]:
+    #     msbox_update = StyledPopup(title="New Version!", message=(
+    #         "Good news! An update is ready. \n\n   "
+    #         f"Version {result_update['version']} ({result_update['size'] / 1_000_000:.2f} MB)"
+    #     ), topmost=True, option_1="Update now", option_2="Later",)
+    #     
+    #     if msbox_update.get() == "Update now":
+    #         download_update(result_update["url"])
 
     #! Hard‑Coded
     if not result_system["status"] and result_system["message"].strip().lower().count("shaders folder not found!") == 1:

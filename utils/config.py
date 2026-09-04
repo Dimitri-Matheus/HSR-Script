@@ -11,9 +11,9 @@ default = {
         "auto_check_update": True,
         "gui_theme": "Default",
         "last_played_game": "",
-        "xxmi_feature_enabled": False,
         "direct_feature_enabled": False,
-        "reshade_feature_enabled": False
+        "reshade_feature_enabled": False,
+        "mod_feature_enabled": False
     },
     "Packages": {
         "selected": "",
@@ -30,8 +30,7 @@ default = {
         "reshade_dll": "script/ReShade64.dll",
         "reshade_dxvk": "script/dxgi.dll",
         "reshade_config": "script/ReShade64.json",
-        "reshade_xr_config": "script/ReShade64_XR.json",
-        "xxmi_file": ""
+        "reshade_xr_config": "script/ReShade64_XR.json"
     },
     "Games": {
         "genshin_impact": {
@@ -85,7 +84,6 @@ def grant_user_access(filepath: str):
     except Exception as e:
         print(f"Failed to set permissions for the file {filepath}: {e}")
 
-
 def update_config(base, template):
     updated = False
     new_base = {}
@@ -112,7 +110,6 @@ def update_config(base, template):
 
     return updated
 
-
 def load_config() -> dict:
     if not os.path.exists(config_path):
         save_config(default)
@@ -129,7 +126,6 @@ def load_config() -> dict:
         save_config(default)
         return default.copy()
     
-
 def load_metadata() -> dict:
     try:
         metadata_path = resource_path("script/Presets/metadata.json")
@@ -138,12 +134,10 @@ def load_metadata() -> dict:
     except (FileNotFoundError, json.JSONDecodeError):
         return {"presets": []}
 
-
 def save_config(config: dict):
     with open(config_path, "w", encoding="utf-8") as file:
         json.dump(config, file, indent=4, ensure_ascii=False)
     grant_user_access(str(config_path))
-
 
 def delete_config():
     try:
@@ -151,10 +145,3 @@ def delete_config():
             config_path.unlink()
     except Exception as e:
         print(f"Failed to delete the configuration file: {e}")
-
-
-#! Test functions
-# config = load_config()
-# config["theme"] = "dark"
-# save_config(config)
-# delete_config()
