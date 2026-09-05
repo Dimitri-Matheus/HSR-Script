@@ -258,6 +258,52 @@ class ReshadeSetup():
         except Exception as e:
             logger.error(e)
 
+    def model_importer_integration(self, game_code):
+        if not self.launcher_config.get("model_importer_enabled", False):
+            logger.info(f"Model Importer Integration inactive")
+            return
+
+        IMPORTER_MAP = {
+            "genshin_impact": "GIMI",
+            "honkai_star_rail": "SRMI",
+            "wuthering_waves": "WWMI",
+            "zenless_zone_zero": "ZZMI",
+            "arknights_endfield": "EFMI"
+        }
+
+        importer_key = IMPORTER_MAP.get(game_code)
+        if not importer_key:
+            logger.warning(f"No Model Importer mapped for game {game_code}!")
+            return
+
+        logger.info(f"Mapping for {game_code} successfully found! Using {importer_key}")
+
+        script_dir = relative_path("script")
+        importer_dir = script_dir / importer_key
+
+        if not importer_dir.is_dir():
+            logger.error(f"Model Importer folder not found: {importer_dir}")
+            return
+
+        try:
+            for item in importer_dir.iterdir():
+                dest = self.game_dir / item.name
+                if not dest.exists():
+                    if item.is_dir():
+                        dest.symlink_to(item, target_is_directory=True)
+                        logger.info(f"Linked directory: {item.name} -> {dest}")
+                    else:
+                        shutil.copy2(item, dest)
+                        logger.info(f"Copied file: {item.name} -> {dest}")
+                else:
+                    logger.info(f"Item already exists in game folder: {item.name}")
+
+            logger.info(f"Model Importer ({importer_key}) integrated successfully!")
+
+        except Exception as e:
+            logger.error(f"Failed to integrate Model Importer: {e}")
+
+
     # Define Hash files
     def _sha256(self, file_source: Path, file_destination: Path) -> bool:
         source_hash = hashlib.sha256()

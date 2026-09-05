@@ -12,6 +12,7 @@ default = {
         "gui_theme": "Default",
         "last_played_game": "",
         "xxmi_feature_enabled": False,
+        "model_importer_enabled": False,
         "direct_feature_enabled": False,
         "reshade_feature_enabled": False
     },

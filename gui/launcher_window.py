@@ -125,6 +125,9 @@ class LauncherDialog(ctk.CTkToplevel):
         setup.addon_support()
         setup.dxvk_support()
         setup.xxmi_integration(game_code)
+        
+        if self.settings["Launcher"].get("model_importer_enabled", False):
+            setup.model_importer_integration(game_code)
 
         result = setup.inject_game()
         self.destroy()
