@@ -83,7 +83,19 @@ class Image_Frame(ctk.CTkFrame):
         if path and os.path.exists(path):
             try:
                 image_size = size or ThemeManager.get_image_size(self.current_theme)
-                return ctk.CTkImage(PIL.Image.open(path), size=image_size)
+                                
+                light_path = path.replace(".png", "-light.png")             
+                
+                dark_img = PIL.Image.open(path)             
+               
+                if os.path.exists(light_path):
+                    light_img = PIL.Image.open(light_path)
+                else:
+                    light_img = dark_img
+                    
+                
+                return ctk.CTkImage(light_image=light_img, dark_image=dark_img, size=image_size)
+            
             except Exception as e:
                 logger.error(f"Failed to load custom image: {e}")
         return None
