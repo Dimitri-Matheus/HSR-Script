@@ -118,24 +118,23 @@ class AppFrame(ctk.CTkFrame):
             "Do not recommend using addons in online games!"
         ))
 
+        self.switch_model_importer = ctk.CTkSwitch(self, text="Model Importer", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
+        self.switch_model_importer.configure(switch_width=36, switch_height=20, variable=self.model_importer_var)
+        self.switch_model_importer.grid(row=6, column=0, padx=25, pady=(10, 5), sticky="w")
+        StyledToolTip(self.switch_model_importer, message = (
+            "Enabled: Enables loading custom 3D models via GIMI/SRMI/WWMI/ZZMI/EFMI.\n"
+            "Disabled: Plays the game without custom models.\n"
+            "Experimental!!!"
+        ))
+
         self.switch_update = ctk.CTkSwitch(self, text="Check for updates", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
         self.switch_update.configure(switch_width=36, switch_height=20, variable=self.update_var)
-        self.switch_update.grid(row=6, column=0, padx=25, pady=(10, 5), sticky="w")
+        self.switch_update.grid(row=7, column=0, padx=25, pady=(10, 5), sticky="w")
         StyledToolTip(self.switch_update, message = (
             "Enabled: The app will automatically check for updates at startup.\n"
             "Disabled: The app will not check for updates automatically.\n"
             "Recommended to keep enabled for automatic updates."
         ))
-
-        # --- Model importer ---
-        self.switch_model_importer = ctk.CTkSwitch(self, text="Model Importer", font=ctk.CTkFont(family="Verdana", size=15), onvalue=True, offvalue=False)
-        self.switch_model_importer.configure(switch_width=36, switch_height=20, variable=self.model_importer_var)
-        self.switch_model_importer.grid(row=7, column=0, padx=25, pady=(10, 5), sticky="w")
-        StyledToolTip(self.switch_model_importer, message = (
-            "Enabled: Enables loading custom 3D models via GIMI/SRMI/WWMI.\n"
-            "Disabled: Plays the game without custom models."
-        ))
-        # ------------------------------------------
 
         # XXMI Path
         self.config_file = ctk.CTkLabel(self, text="Configuration File", font=ctk.CTkFont(size=18))
@@ -144,18 +143,11 @@ class AppFrame(ctk.CTkFrame):
         self.xxmi_settings = ctk.CTkEntry(self, placeholder_text="C:/Path/to/XXMI Launcher Config.json", font=ctk.CTkFont(family="Verdana", size=14))
         self.xxmi_settings.configure(width=478, height=38, corner_radius=8, state="disabled", fg_color="#333333", border_color="#333333")
         self.xxmi_settings.grid(row=9, column=0, padx=25, pady=5, sticky="w")
-
-        self.browser_button = ctk.CTkButton(self, text="Browser", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: self.select_file(self.xxmi_settings))
-        self.browser_button.configure(width=123, height=38, corner_radius=8, state="disabled", fg_color="#222222")
-        self.browser_button.grid(row=9, column=1, padx=(0, 20), pady=5, sticky="w")
-        self.xxmi_settings = ctk.CTkEntry(self, placeholder_text="C:/Path/to/XXMI Launcher Config.json", font=ctk.CTkFont(family="Verdana", size=14))
-        self.xxmi_settings.configure(width=478, height=38, corner_radius=8, state="disabled", fg_color="#333333", border_color="#333333")
-        self.xxmi_settings.grid(row=8, column=0, padx=25, pady=5, sticky="w")
         StyledToolTip(self.xxmi_settings, message = "Usually located in the \"XXMI Launcher folder\" or \"AppData\\Roaming\\XXMI Launcher\".")
 
         self.browser_button = ctk.CTkButton(self, text="Browser", font=ctk.CTkFont(family="Verdana", size=14, weight="bold"), command=lambda: self.select_file(self.xxmi_settings))
         self.browser_button.configure(width=123, height=38, corner_radius=8, state="disabled", fg_color="#222222")
-        self.browser_button.grid(row=8, column=1, padx=(0, 20), pady=5, sticky="w")
+        self.browser_button.grid(row=9, column=1, padx=(0, 20), pady=5, sticky="w")
 
         self.switch_toogle_xxmi()
 

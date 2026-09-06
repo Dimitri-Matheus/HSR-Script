@@ -46,6 +46,7 @@ class ReshadeSetup():
         self.download_src = relative_path(self.package_config.get("download_dir"))
         self.reshade_enabled = self.launcher_config.get("reshade_feature_enabled")
         self.direct_enabled = self.launcher_config.get("direct_feature_enabled")
+        self.importer_enabled = self.launcher_config.get("model_importer_enabled")
 
     def verify_installation(self):
         try:
@@ -199,6 +200,14 @@ class ReshadeSetup():
                 else:
                     inject_dll_from_path(process_name.process_handle, str(self.reshade_dll))
                     logger.info(f"{self.reshade_dll.name} injected successfully!")
+
+                if self.importer_enabled and self.importer_name:
+                    if hasattr(self, 'importer_dll_path') and self.importer_dll_path:
+                        inject_dll_from_path(process_name.process_handle, self.importer_dll_path)
+                        logger.info(f"{self.importer_name} injected successfully from script folder!")
+                    else:
+                        logger.info(f"No d3d11.dll found for {self.importer_name}, skipping injection...")
+
                 return {"message": None}
             else:
                 raise RuntimeError(f"Game process {self.exe_path.name} did not start within {timeout} seconds...")
@@ -211,21 +220,20 @@ class ReshadeSetup():
                     "\n(Uninstall ReShade and retry)\n"
                 ),
             }
-    
+
+    def __get_package_key(self, game_code) -> str:
+        game_info = self.game_config.get(game_code, {})
+        key = game_info.get("package")
+        if not key:
+            logger.warning(f"No package key found for game {game_code}")
+        return key
+
     def xxmi_integration(self, game_code):
         if not self.xxmi_enabled:
             logger.info(f"XXMI Integration inactive")
             return
 
-        IMPORTER_MAP = {
-            "genshin_impact": "GIMI",
-            "honkai_star_rail": "SRMI",
-            "wuthering_waves": "WWMI",
-            "zenless_zone_zero": "ZZMI",
-            "arknights_endfield": "EFMI"
-        }
-
-        importer_key = IMPORTER_MAP.get(game_code)
+        importer_key = self.__get_package_key(game_code)
         if not importer_key:
             logger.warning(f"No XXMI importer mapped for game {game_code}!")
             return None
@@ -259,25 +267,18 @@ class ReshadeSetup():
             logger.error(e)
 
     def model_importer_integration(self, game_code):
-        if not self.launcher_config.get("model_importer_enabled", False):
+        if not self.importer_enabled:
             logger.info(f"Model Importer Integration inactive")
             return
 
-        IMPORTER_MAP = {
-            "genshin_impact": "GIMI",
-            "honkai_star_rail": "SRMI",
-            "wuthering_waves": "WWMI",
-            "zenless_zone_zero": "ZZMI",
-            "arknights_endfield": "EFMI"
-        }
-
-        importer_key = IMPORTER_MAP.get(game_code)
+        importer_key = self.__get_package_key(game_code)
         if not importer_key:
             logger.warning(f"No Model Importer mapped for game {game_code}!")
             return
 
         logger.info(f"Mapping for {game_code} successfully found! Using {importer_key}")
 
+        self.importer_name = importer_key
         script_dir = relative_path("script")
         importer_dir = script_dir / importer_key
 
@@ -286,22 +287,18 @@ class ReshadeSetup():
             return
 
         try:
-            for item in importer_dir.iterdir():
-                dest = self.game_dir / item.name
-                if not dest.exists():
-                    if item.is_dir():
-                        dest.symlink_to(item, target_is_directory=True)
-                        logger.info(f"Linked directory: {item.name} -> {dest}")
-                    else:
-                        shutil.copy2(item, dest)
-                        logger.info(f"Copied file: {item.name} -> {dest}")
-                else:
-                    logger.info(f"Item already exists in game folder: {item.name}")
+            dll_name = "d3d11.dll"
+            importer_dll = importer_dir / dll_name
+            if not importer_dll.exists():
+                logger.error(f"Required DLL '{dll_name}' not found in {importer_dir}")
+                return
 
-            logger.info(f"Model Importer ({importer_key}) integrated successfully!")
+            self.importer_dll_path = str(importer_dll.resolve())
+
+            logger.info(f"DLL path: {self.importer_dll_path}")
 
         except Exception as e:
-            logger.error(f"Failed to integrate Model Importer: {e}")
+            logger.error(f"Failed to prepare Model Importer: {e}")
 
 
     # Define Hash files
