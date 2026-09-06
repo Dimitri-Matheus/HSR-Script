@@ -12,6 +12,7 @@ default = {
         "gui_theme": "Default",
         "last_played_game": "",
         "xxmi_feature_enabled": False,
+        "model_importer_enabled": False,
         "direct_feature_enabled": False,
         "reshade_feature_enabled": False
     },
@@ -38,31 +39,36 @@ default = {
             "icon_path": "assets/games/GI.png",
             "folder": "",
             "exe": "GenshinImpact.exe",
-            "subpath": ""
+            "subpath": "",
+            "importers": "GIMI"
         },
         "honkai_star_rail": {
             "icon_path": "assets/games/HSR.png",
             "folder": "",
             "exe": "StarRail.exe",
-            "subpath": ""
+            "subpath": "",
+            "importers": "SRMI"
         },
         "wuthering_waves": {
             "icon_path": "assets/games/WuWa.png",
             "folder": "",
             "exe": "Client-Win64-Shipping.exe",
-            "subpath":  "Client/Binaries/Win64"
+            "subpath":  "Client/Binaries/Win64",
+            "importers": "WWMI"
         },
         "zenless_zone_zero": {
             "icon_path": "assets/games/ZZZ.png",
             "folder": "",
             "exe": "ZenlessZoneZero.exe",
-            "subpath": ""
+            "subpath": "",
+            "importers": "ZZMI"
         },
         "arknights_endfield": {
             "icon_path": "assets/games/AKE.png",
             "folder": "",
             "exe": "Endfield.exe",
-            "subpath": ""
+            "subpath": "",
+            "importers": "EFMI"
         },
     }
 }
