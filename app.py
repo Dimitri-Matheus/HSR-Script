@@ -112,7 +112,8 @@ class Starluxe(ctk.CTk):
         
         self.settings = settings
 
-        ctk.set_appearance_mode("dark")
+        appearance = self.settings["Launcher"].get("appearance_mode", "Dark")
+        ctk.set_appearance_mode(appearance)
 
         # Container
         self.container = ctk.CTkFrame(self)

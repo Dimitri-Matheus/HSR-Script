@@ -10,6 +10,7 @@ default = {
     "Launcher": {
         "auto_check_update": True,
         "gui_theme": "Default",
+        "appearance_mode": "Dark",
         "last_played_game": "",
         "xxmi_feature_enabled": False,
         "model_importer_enabled": False,

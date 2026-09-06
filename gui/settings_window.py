@@ -69,6 +69,7 @@ class AppFrame(ctk.CTkFrame):
         self.dxvk_var = ctk.BooleanVar(value=self.settings["Launcher"]["direct_feature_enabled"])
         self.update_var = ctk.BooleanVar(value=self.settings["Launcher"]["auto_check_update"])
         self.theme_var = ctk.StringVar(value=self.settings["Launcher"]["gui_theme"])
+        self.appearance_var = ctk.StringVar(value=self.settings["Launcher"].get("appearance_mode", "Dark"))
 
         # Themes
         self.theme_subtitle = ctk.CTkLabel(self, text="Theme", font=ctk.CTkFont(size=18))
@@ -78,6 +79,9 @@ class AppFrame(ctk.CTkFrame):
         self.themes_option = ctk.CTkOptionMenu(self, width=180, height=36, font=ctk.CTkFont(family="Verdana", size=14), dropdown_font=ctk.CTkFont(family="Verdana", size=12))
         self.themes_option.configure(values=themes.get_available_themes(), variable=self.theme_var)
         self.themes_option.grid(row=1, column=0, padx=25, pady=5, sticky="w")
+        self.appearance_option = ctk.CTkOptionMenu(self, width=130, height=36, font=ctk.CTkFont(family="Verdana", size=14), dropdown_font=ctk.CTkFont(family="Verdana", size=12), command=self.change_appearance)
+        self.appearance_option.configure(values=["Dark", "Light", "System"], variable=self.appearance_var)
+        self.appearance_option.grid(row=1, column=1, padx=(0, 25), pady=5, sticky="w")
         StyledToolTip(self.themes_option, message=(
             "How to create a custom theme:\n"
             "1. Click the 'Open Folder' button to open the 'themes' folder.\n"
@@ -86,6 +90,8 @@ class AppFrame(ctk.CTkFrame):
             "4. Edit and replace images as needed. (Supported image: .png, .jpg, .jpeg).\n"
             "Save your changes and restart the app to apply them."
         ))
+
+
 
         # Integration/Features
         self.integration_subtitle = ctk.CTkLabel(self, text="Integration/Features", font=ctk.CTkFont(size=18))
@@ -168,6 +174,8 @@ class AppFrame(ctk.CTkFrame):
             self.xxmi_file_path = filename
             widget.delete(0, "end")
             widget.insert(0, filename)
+    def change_appearance(self, new_appearance: str):
+        ctk.set_appearance_mode(new_appearance)         
 
 
 class SettingsDialog(ctk.CTkToplevel):
@@ -228,6 +236,7 @@ class SettingsDialog(ctk.CTkToplevel):
         direct_enabled = self.app_content_frame.dxvk_var.get()
         update_enabled = self.app_content_frame.update_var.get()
         theme_options = self.app_content_frame.theme_var.get()
+        appearance_mode = self.app_content_frame.appearance_var.get()
         xxmi_config_path = self.app_content_frame.xxmi_settings.get().strip()
         model_importer_enabled = self.app_content_frame.model_importer_var.get()
 
@@ -236,6 +245,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.settings["Launcher"]["auto_check_update"] = update_enabled
         self.settings["Launcher"]["direct_feature_enabled"] = direct_enabled
         self.settings["Launcher"]["model_importer_enabled"] = model_importer_enabled
+        self.settings["Launcher"]["appearance_mode"] = appearance_mode
 
         if self.settings["Launcher"]["gui_theme"] != theme_options:
             self.settings["Launcher"]["gui_theme"] = theme_options
