@@ -37,6 +37,22 @@ from gui.widgets import StyledToolTip, StyledPopup
 logger = logging.getLogger(__name__)
 
 # Animations
+def get_adaptive_image(path: str, size: tuple):
+    if not path or not os.path.exists(path):
+        return None
+        
+    root, ext = os.path.splitext(path)
+    light_path = f"{root}-light{ext}"
+    
+    try:
+        dark_img = PIL.Image.open(path)
+        light_img = PIL.Image.open(light_path) if os.path.exists(light_path) else dark_img
+        return ctk.CTkImage(light_image=light_img, dark_image=dark_img, size=size)
+    except Exception as e:
+        logger.error(f"Failed to load image: {e}")
+        return None
+# --------------------------------------
+
 class FadeInLabel(ctk.CTkLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -74,31 +90,17 @@ class Image_Frame(ctk.CTkFrame):
     def __init__(self, master, theme_name: str):
         super().__init__(master, width=256, height=256)
         self.current_theme = theme_name
-        self.default_image = ctk.CTkImage(PIL.Image.open(resource_path("themes/Default/MainFrame/logo-app.png")), size=ThemeManager.get_image_size("Default"))
+        
+        
+        default_path = resource_path("themes/Default/MainFrame/logo-app.png")
+        self.default_image = self.process_image(default_path, ThemeManager.get_image_size("Default"))
 
         self.image_label = ctk.CTkLabel(master=self, text="", image=self.default_image)
         self.image_label.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     def process_image(self, path, size: tuple = None):
-        if path and os.path.exists(path):
-            try:
-                image_size = size or ThemeManager.get_image_size(self.current_theme)
-                                
-                light_path = path.replace(".png", "-light.png")             
-                
-                dark_img = PIL.Image.open(path)             
-               
-                if os.path.exists(light_path):
-                    light_img = PIL.Image.open(light_path)
-                else:
-                    light_img = dark_img
-                    
-                
-                return ctk.CTkImage(light_image=light_img, dark_image=dark_img, size=image_size)
-            
-            except Exception as e:
-                logger.error(f"Failed to load custom image: {e}")
-        return None
+        image_size = size or ThemeManager.get_image_size(self.current_theme)
+        return get_adaptive_image(path, image_size) #
 
     def update_image(self, new_image, size: tuple = None):
         image = self.process_image(new_image, size)
@@ -123,9 +125,7 @@ class Starluxe(ctk.CTk):
         self.resizable(width=False, height=False)
         
         self.settings = settings
-
-        appearance = self.settings["Launcher"].get("appearance_mode", "Dark")
-        ctk.set_appearance_mode(appearance)
+        ctk.set_appearance_mode(self.settings["Launcher"].get("appearance_mode", "System"))
 
         # Container
         self.container = ctk.CTkFrame(self)
@@ -199,7 +199,7 @@ class HomePage(BasePage):
         super().__init__(parent, controller)
         self.modal = None
         self.previous_page = "ReshadePage"
-        self.button_icon = ctk.CTkImage(PIL.Image.open(resource_path("assets/icon/button-left.png")), size=(32, 32))
+        self.button_icon = get_adaptive_image(resource_path("assets/icon/button-left.png"), size=(32, 32))
         self.frame.load_theme_image("MainFrame/logo-home")
         self.frame.grid(pady=40)
 
@@ -370,7 +370,7 @@ class SetupPage(BasePage):
         self.text_2.configure(text="Enhance your game visuals with the \nReShade")
         self.text_2.grid_configure(pady=(20, 30))
 
-        self.button_icon = ctk.CTkImage(PIL.Image.open(resource_path("assets/icon/button-next.png")), size=(32, 32))
+        self.button_icon = get_adaptive_image(resource_path("assets/icon/button-next.png"), size=(32, 32))
         self.button_1.configure(image=self.button_icon, width=0, height=0, fg_color="transparent", command=lambda: self.controller.show_page("ConfigPage"))
         self.button_1.grid_configure(pady=(40, 10))
         StyledToolTip(self.button_1, message="🎉 Thanks for testing! Enjoy your experience!")
@@ -420,4 +420,4 @@ if __name__ == "__main__":
             return download_dependencies(settings["Packages"]["download_dir"], progress_callback)
         DownloadDialog(app, "Downloading Dependencies", True, download_task)
     
-    app.mainloop()
+    app.mainloop()p
