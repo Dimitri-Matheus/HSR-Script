@@ -420,4 +420,4 @@ if __name__ == "__main__":
             return download_dependencies(settings["Packages"]["download_dir"], progress_callback)
         DownloadDialog(app, "Downloading Dependencies", True, download_task)
     
-    app.mainloop()p
+    app.mainloop()
